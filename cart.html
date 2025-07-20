@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Your Cart - Health Care Center</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header role="banner">
+    <div class="container header-flex">
+        <h1>Your Cart</h1>
+        <nav class="nav-left" role="navigation" aria-label="Primary Navigation">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="services.html">Services</a></li>
+                <li><a href="team.html" class="">Our Team</a></li>
+                <li><a href="testimonials.html">Testimonials</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="products.html" class="active">Products</a></li>
+            </ul>
+        </nav>
+        <div class="cart-icon" id="cart-icon" title="View Cart" role="button" tabindex="0" aria-label="View Cart" onclick="location.href='cart.html'">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" width="24px" height="24px" aria-hidden="true" focusable="false">
+                <path d="M7 18c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm10 0c-1.104 0-2 .896-2 2s.896 2 2 2 2-.896 2-2-.896-2-2-2zm-12.83-2.25l1.72-7.5h11.22l1.72 7.5h-14.66zm15.83-9.75h-16l-1-4h-2v2h1l3.6 7.59-1.35 2.44c-.16.28-.25.61-.25.97 0 1.1.9 2 2 2h12v-2h-11.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49-1.74-1z"/>
+            </svg>
+            <span class="cart-count" id="cart-count" aria-live="polite" aria-atomic="true">0</span>
+        </div>
+    </div>
+</header>
+<main class="cart-container" role="main">
+    <table id="cart-table" aria-label="Shopping Cart Items">
+        <thead>
+            <tr>
+                <th scope="col">Product</th>
+                <th scope="col">Price</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Subtotal</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="cart-items">
+            <!-- Cart items will be dynamically inserted here -->
+        </tbody>
+    </table>
+    <div class="total" id="cart-total" aria-live="polite" aria-atomic="true">Total: ₹0</div>
+    <div class="cart-actions">
+        <button id="purchase-btn" class="btn-primary">Purchase</button>
+    </div>
+    <div class="empty-cart" id="empty-cart" style="display:none;">Your cart is empty.</div>
+</main>
+<!-- Payment Section -->
+<section class="payment-section" aria-label="Payment Method">
+    <h3>Payment Method</h3>
+    <div class="payment-balance">
+        <label for="balance-code">Your available balance</label>
+        <input type="text" id="balance-code" placeholder="Enter Code" />
+        <button id="apply-balance" class="btn-primary">Apply</button>
+    </div>
+    <div class="payment-methods">
+        <label>
+            <input type="radio" name="payment-method" value="card" checked />
+            Credit or debit card
+            <span class="card-logos">
+                <img src="https://img.icons8.com/color/48/000000/visa.png" alt="Visa" />
+                <img src="https://img.icons8.com/color/48/000000/mastercard.png" alt="Mastercard" />
+                <img src="https://img.icons8.com/color/48/000000/amex.png" alt="Amex" />
+                <img src="https://img.icons8.com/color/48/000000/maestro.png" alt="Maestro" />
+                <img src="https://img.icons8.com/color/48/000000/rupay.png" alt="RuPay" />
+            </span>
+        </label>
+        <label>
+            <input type="radio" name="payment-method" value="netbanking" />
+            Net Banking
+            <select class="net-banking-select" id="netbanking-options" disabled>
+                <option value="">Choose an Option</option>
+                <option value="bank1">Bank 1</option>
+                <option value="bank2">Bank 2</option>
+                <option value="bank3">Bank 3</option>
+            </select>
+        </label>
+        <label>
+            <input type="radio" name="payment-method" value="upi" />
+            Other UPI Apps
+        </label>
+        <label>
+            <input type="radio" name="payment-method" value="cod" />
+            Cash on Delivery / Pay on Delivery
+        </label>
+    </div>
+</section>
+<script>
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    function updateCartCount() {
+        const cartCount = document.getElementById('cart-count');
+        cartCount.textContent = cart.length;
+    }
+
+    function renderCart() {
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+        const emptyCartMessage = document.getElementById('empty-cart');
+
+        cartItemsContainer.innerHTML = '';
+
+        if (cart.length === 0) {
+            emptyCartMessage.style.display = 'block';
+            cartTotal.style.display = 'none';
+            document.querySelector('.cart-actions').style.display = 'none';
+            return;
+        } else {
+            emptyCartMessage.style.display = 'none';
+            cartTotal.style.display = 'block';
+            document.querySelector('.cart-actions').style.display = 'block';
+        }
+
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            const subtotal = item.price * item.quantity;
+            total += subtotal;
+
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+                <td>${item.name}</td>
+                <td>₹${item.price}</td>
+                <td>
+                    <input type="number" min="1" value="${item.quantity}" data-index="${index}" class="quantity-input" />
+                </td>
+                <td>₹${subtotal}</td>
+                <td>
+                    <button class="remove-btn" data-index="${index}">Remove</button>
+                </td>
+            `;
+
+            cartItemsContainer.appendChild(tr);
+        });
+
+        cartTotal.textContent = 'Total: ₹' + total;
+
+        // Add event listeners for quantity inputs
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const idx = e.target.getAttribute('data-index');
+                const newQty = parseInt(e.target.value);
+                if (newQty > 0) {
+                    cart[idx].quantity = newQty;
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    renderCart();
+                    updateCartCount();
+                }
+            });
+        });
+
+        // Add event listeners for remove buttons
+        document.querySelectorAll('.remove-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const idx = e.target.getAttribute('data-index');
+                cart.splice(idx, 1);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                renderCart();
+                updateCartCount();
+            });
+        });
+    }
+
+    document.getElementById('purchase-btn').addEventListener('click', () => {
+        if (cart.length === 0) {
+            alert('Your cart is empty.');
+            return;
+        }
+        alert('Thank you for your purchase! Your order has been placed.');
+        cart = [];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        renderCart();
+        updateCartCount();
+    });
+
+    // Payment method selection logic
+    const paymentRadios = document.querySelectorAll('input[name="payment-method"]');
+    const netbankingSelect = document.getElementById('netbanking-options');
+
+    paymentRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.value === 'netbanking') {
+                netbankingSelect.disabled = false;
+            } else {
+                netbankingSelect.disabled = true;
+                netbankingSelect.value = '';
+            }
+        });
+    });
+
+    // Apply balance button logic (dummy)
+    document.getElementById('apply-balance').addEventListener('click', () => {
+        const code = document.getElementById('balance-code').value.trim();
+        if (code) {
+            alert('Balance code "' + code + '" applied.');
+        } else {
+            alert('Please enter a balance code.');
+        }
+    });
+
+    // Initialize
+    renderCart();
+    updateCartCount();
+</script>
+</body>
